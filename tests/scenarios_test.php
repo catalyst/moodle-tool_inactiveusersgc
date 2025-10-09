@@ -22,13 +22,16 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
  */
-
+namespace tool_inactiveusersgc;
 use core\event\user_loggedin;
 use tool_inactiveusersgc\observer;
 use tool_inactiveusersgc\task\process_users;
 
 /**
  * Comprehensive scenarios for tool_inactiveusersgc.
+ * @covers \tool_inactiveusersgc\local\processor
+ * @covers \tool_inactiveusersgc\task\process_users
+ * @covers \tool_inactiveusersgc\observer
  */
 final class scenarios_test extends advanced_testcase {
     /** @var stdClass profile field record for primary_membership_code */
@@ -656,49 +659,5 @@ final class scenarios_test extends advanced_testcase {
         $this->assertGreaterThan((int)$recbeforerepeat->lastsent, (int)$rec3->lastsent, 'Repeat should update lastsent');
         $this->assertSame(1, (int)$rec3->stage, 'Stage remains first while still in first window');
     }
-
-    protected function dump_emails(array $messages): void {
-        foreach ($messages as $m) {
-            $to = $m->to ?? ($m->toemail ?? '');
-            $subject = $m->subject ?? '';
-            $body = $m->body ?? '';
-            // Common alternates across Moodle versions:
-            $alt = $m->altbody ?? ($m->bodyplain ?? $m->fullmessage ?? $m->fullmessagehtml ?? '');
-            fwrite(STDOUT, "\n==== EMAIL DEBUG ====\n");
-            fwrite(STDOUT, "To: {$to}\n");
-            fwrite(STDOUT, "Subject: {$subject}\n");
-            fwrite(STDOUT, "Body:\n" . ($body !== '' ? $body : $alt) . "\n");
-            // Optional: show all properties for discovery
-            // fwrite(STDOUT, print_r(get_object_vars($m), true));
-        }
-    }
-
-
-    public function test_debug_email_output(): void {
-        $this->setCurrentTimeStart();
-        $now = time();
-
-        // Force thresholds so we trigger first warning immediately.
-        set_config('firstdays', 1, 'tool_inactiveusersgc');
-        set_config('actiondays', 10, 'tool_inactiveusersgc');
-
-        // Create a user inactive for 2 days.
-        $u = $this->getDataGenerator()->create_user(['lastaccess' => $now - (2 * DAYSECS)]);
-
-        // Start capturing all emails.
-        $sink = $this->redirectEmails();
-
-        // Run the scheduled task.
-        $this->run_task();
-
-        // Collect messages.
-        $msgs = $sink->get_messages();
-
-        [$userMsgs, $summaryMsgs] = $this->split_messages($sink->get_messages());
-        $this->dump_emails($userMsgs);
-        $this->dump_emails($summaryMsgs);
-    }
-
-
 
 }
