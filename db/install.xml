@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<XMLDB PATH="admin/tool/inactiveusersgc/db" VERSION="2025092900" COMMENT="Inactive users manager" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <TABLES>
+    <TABLE NAME="tool_inactiveusersgc" COMMENT="Tracks per-user inactivity notifications">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="userid" TYPE="int" LENGTH="10" NOTNULL="true"/>
+        <FIELD NAME="stage" TYPE="int" LENGTH="2" NOTNULL="true" DEFAULT="0" COMMENT="0=none,1=first,2=second,3=final,9=actioned"/>
+        <FIELD NAME="lastsent" TYPE="int" LENGTH="10" NOTNULL="false" COMMENT="Time last notification was sent for this user"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+        <KEY NAME="userid_ix" TYPE="unique" FIELDS="userid"/>
+      </KEYS>
+    </TABLE>
+  </TABLES>
+</XMLDB>
