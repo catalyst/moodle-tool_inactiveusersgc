@@ -22,13 +22,15 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
  */
-
 use core\event\user_loggedin;
 use tool_inactiveusersgc\observer;
 use tool_inactiveusersgc\task\process_users;
 
 /**
  * Comprehensive scenarios for tool_inactiveusersgc.
+ * @covers \tool_inactiveusersgc\local\processor
+ * @covers \tool_inactiveusersgc\task\process_users
+ * @covers \tool_inactiveusersgc\observer
  */
 final class scenarios_test extends advanced_testcase {
 
@@ -309,10 +311,10 @@ final class scenarios_test extends advanced_testcase {
         global $DB;
 
         // Ensure thresholds match the scenario.
-        set_config('firstdays',   60,  'tool_inactiveusersgc');
-        set_config('seconddays',  300, 'tool_inactiveusersgc');
-        set_config('finaldays',   364, 'tool_inactiveusersgc');
-        set_config('actiondays',  365, 'tool_inactiveusersgc');
+        set_config('firstdays', 60, 'tool_inactiveusersgc');
+        set_config('seconddays', 300, 'tool_inactiveusersgc');
+        set_config('finaldays', 364, 'tool_inactiveusersgc');
+        set_config('actiondays', 365, 'tool_inactiveusersgc');
 
         // Start just under second threshold.
         $u = $this->getDataGenerator()->create_user();
@@ -336,7 +338,7 @@ final class scenarios_test extends advanced_testcase {
         $this->assertEquals(2, (int)$rec->stage);
 
         // Jump to final window but keep below action.
-        set_config('finaldays',  360, 'tool_inactiveusersgc');
+        set_config('finaldays', 360, 'tool_inactiveusersgc');
         set_config('actiondays', 370, 'tool_inactiveusersgc');
         $this->set_inactivity_days($u, 362);
 
@@ -602,7 +604,7 @@ final class scenarios_test extends advanced_testcase {
         // Assert the summary body reports the exact counts.
         $summary = end($summarymsgs);
         $this->assertStringContainsString('Inactive users manager', $summary->subject);
-        $this->assertMatchesRegularExpression('/Found:\s*2\b/',    $summary->body);
+        $this->assertMatchesRegularExpression('/Found:\s*2\b/', $summary->body);
         $this->assertMatchesRegularExpression('/Notified:\s*1\b/', $summary->body);
         $this->assertMatchesRegularExpression('/Actioned:\s*1\b/', $summary->body);
     }

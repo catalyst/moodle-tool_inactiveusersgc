@@ -22,7 +22,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
  */
-
 use tool_inactiveusersgc\local\processor;
 
 /**

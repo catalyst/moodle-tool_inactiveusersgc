@@ -21,7 +21,7 @@
  *
  * @package    tool_inactiveusersgc
  * @category   admin
- * @copyright  2025 Waleed ul Hassan
+ * @copyright  2025 Waleed ul Hassan <waleed.hassan@catalyst-eu.net>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 

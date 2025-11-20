@@ -72,7 +72,7 @@ class processor {
                 $this->process_user($u, $counts);
             } catch (\Throwable $e) {
                 $counts->errors++;
-                \debugging('tool_inactiveusersgc error for user '.$u->id.': '.$e->getMessage(), DEBUG_DEVELOPER);
+                \debugging('tool_inactiveusersgc error for user ' . $u->id.': ' . $e->getMessage(), DEBUG_DEVELOPER);
             }
         }
 
@@ -218,17 +218,27 @@ class processor {
             'seconddays' => (int)($this->cfg->seconddays ?? 300),
             'secondrepeat' => (int)($this->cfg->secondrepeat ?? 30),
             'finaldays' => (int)($this->cfg->finaldays ?? 364),
-            'firstsubject' => (string)($this->cfg->firstsubject ?? get_string('email:first:subject:default',
-                'tool_inactiveusersgc', (object)['sitename' => format_string($globals['SITE']->fullname)])),
-            'firstmsg' => (string)($this->cfg->firstmsg ?? get_string('email:first:body:default',
-                'tool_inactiveusersgc')),
-            'secondsubject' => (string)($this->cfg->secondsubject ?? get_string('email:second:subject:default',
-                'tool_inactiveusersgc', (object)['sitename' => format_string($globals['SITE']->fullname)])),
-            'secondmsg' => (string)($this->cfg->secondmsg ?? get_string('email:second:body:default', 'tool_inactiveusersgc')),
-            'finalsubject' => (string)($this->cfg->finalsubject ?? get_string('email:final:subject:default',
+            'firstsubject' => (string)(
+                $this->cfg->firstsubject ?? get_string('email:first:subject:default',
+                'tool_inactiveusersgc', (object)['sitename' => format_string($globals['SITE']->fullname)])
+            ),
+            'firstmsg' => (string)(
+                $this->cfg->firstmsg ?? get_string('email:first:body:default',
+                'tool_inactiveusersgc')
+            ),
+            'secondsubject' => (string)(
+                $this->cfg->secondsubject ?? get_string('email:second:subject:default',
+                'tool_inactiveusersgc', (object)['sitename' => format_string($globals['SITE']->fullname)])
+            ),
+            'secondmsg' => (string)(
+                $this->cfg->secondmsg ?? get_string('email:second:body:default', 'tool_inactiveusersgc')
+            ),
+            'finalsubject' => (string)(
+                $this->cfg->finalsubject ?? get_string('email:final:subject:default',
                 'tool_inactiveusersgc', (object)['sitename' => format_string($globals['SITE']->fullname)])),
             'finalmsg' => (string)($this->cfg->finalmsg ?? get_string('email:final:body:default', 'tool_inactiveusersgc')),
-            'supportemail' => (string)($this->cfg->supportemail ?? ''),
+            'supportemail' => (string)($this->cfg->supportemail ?? ''
+            ),
         ];
         return $cfg;
     }
@@ -238,16 +248,13 @@ class processor {
      *  0 none, 1 first window, 2 second window, 3 final window, 9 action.
      */
     protected function determine_stage(int $daysinactive, stdClass $cfg): int {
-        if ($daysinactive >= $cfg->actiondays) {
-            return 9;
-        } else if ($daysinactive >= $cfg->finaldays) {
-            return 3;
-        } else if ($daysinactive >= $cfg->seconddays) {
-            return 2;
-        } else if ($daysinactive >= $cfg->firstdays) {
-            return 1;
-        }
-        return 0;
+        return match (true) {
+            $daysinactive >= $cfg->actiondays => 9,
+            $daysinactive >= $cfg->finaldays  => 3,
+            $daysinactive >= $cfg->seconddays => 2,
+            $daysinactive >= $cfg->firstdays  => 1,
+            default                           => 0,
+        };
     }
     /**
      * Determine whether a user should receive an inactivity notification email.
@@ -463,7 +470,7 @@ class processor {
         ];
 
         $subject = get_string('summary:subject', 'tool_inactiveusersgc');
-        $body    = get_string('summary:body',    'tool_inactiveusersgc', $a);
+        $body = get_string('summary:body', 'tool_inactiveusersgc', $a);
 
         \email_to_user($to, $from, $subject, $body);
     }

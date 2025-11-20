@@ -22,11 +22,11 @@
  *
  * @package    tool_inactiveusersgc
  * @category   string
- * @copyright  2025 Waleed ul Hassan
+ * @copyright  2025 Waleed ul Hassan <waleed.hassan@catalyst-eu.net>
  * @license    https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['cap:manage'] = 'Manage inactive users tool settings';
+$string['inactiveusersgc:manage'] = 'Manage inactive users tool settings';
 $string['email:final:body:default'] = 'Hi {$a->firstname},\n\nThis is your final notice. If you don’t sign in by {$a->actiondate}, your account will be {$a->method}.\n\nThanks,\n{$a->supportname}';
 $string['email:final:subject:default'] = 'Final notice: Account action on {$a->actiondate}';
 $string['email:first:body:default'] = 'Hi {$a->firstname},\n\nIt looks like you haven’t signed in to {$a->sitename} for a while.\nIf you still need your account, please sign in within the next few weeks.\n\nThanks,\n{$a->supportname}';
@@ -49,6 +49,7 @@ $string['settings:method'] = 'Action method';
 $string['settings:method:delete'] = 'Delete';
 $string['settings:method:suspend'] = 'Suspend';
 $string['settings:method_desc'] = 'Choose what action to take when a user exceeds the inactivity action days.';
+$string['settings:noprofilefield'] = 'No custom profile field <code>primary_membership_code</code> was found. Create it in <a href="{$a->url}">User profile fields</a> to enable tenant-based filtering.';
 $string['settings:seconddays'] = 'Days until second warning';
 $string['settings:secondmsg'] = 'Second warning email message (plain text; subject below)';
 $string['settings:secondrepeat'] = 'Repeat second warning every (days)';
