@@ -56,9 +56,11 @@ $string['settings:secondsubject'] = 'Second warning email subject';
 $string['settings:supportemail'] = 'Support email address';
 $string['settings:supportemail_desc'] = 'Address to receive a summary after each task run. Defaults to the site support email if left empty.';
 $string['settings:tenantcodes'] = 'Allowed primary membership codes (comma-separated)';
-$string['settings:tenantcodes_desc'] = 'Filter to users whose profile field "primary_membership_code" is one of these values. Leave blank to include all.';
+$string['settings:tenantcodes_desc'] =
+    'Only process users who belong to a tenant whose CPD Primary Membership Code ' .
+    '(configured on the CPD tenant settings page) matches one of these values. ' .
+    'Enter a comma-separated list, e.g. "ABC,Afund,Club110". Leave blank to include all tenants.';
 $string['summary:body'] = 'Execution time: {$a->when}\nFound: {$a->countfound}\nNotified: {$a->countnotified}\nActioned: {$a->countactioned}\nErrors: {$a->counterrors}';
 $string['summary:subject'] = 'Inactive users manager – task summary';
 $string['task:process'] = 'Process inactive users (notify and action)';
 $string['settings:tenantfilterheading'] = 'Tenant membership filter';
-$string['settings:noprofilefield'] = 'No custom profile field <code>primary_membership_code</code> was found. Create it in <a href="{$a->url}">User profile fields</a> to enable tenant-based filtering.';
