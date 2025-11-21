@@ -62,6 +62,14 @@ $string['settings:tenantcodes_desc'] =
     '(configured on the CPD tenant settings page) matches one of these values. ' .
     'Enter a comma-separated list, e.g. "ABC,Afund,Club110". Leave blank to include all tenants.';
 $string['summary:body'] = 'Execution time: {$a->when}\nFound: {$a->countfound}\nNotified: {$a->countnotified}\nActioned: {$a->countactioned}\nErrors: {$a->counterrors}';
+$string['settings:tenantcodes_desc'] = 'Filter to users whose profile field "primary_membership_code" is one of these values. Leave blank to include all.';
+$string['settings:tenantfilterheading'] = 'Tenant membership filter';
+$string['summary:body'] =
+    'Execution time: {$a->when}' . "\n" .
+    'Found: {$a->countfound}' . "\n" .
+    'Notified: {$a->countnotified}' . "\n" .
+    'Actioned: {$a->countactioned}' . "\n" .
+    'Errors: {$a->counterrors}';
 $string['summary:subject'] = 'Inactive users manager – task summary';
 $string['task:process'] = 'Process inactive users (notify and action)';
 $string['settings:tenantfilterheading'] = 'Tenant membership filter';
