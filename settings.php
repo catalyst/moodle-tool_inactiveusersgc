@@ -34,22 +34,6 @@ if ($hassiteconfig) {
     );
 
     global $DB;
-    $fieldexists = $DB->record_exists('user_info_field', ['shortname' => 'primary_membership_code']);
-    if (!$fieldexists) {
-        $manageurl = new moodle_url('/user/profile/index.php');
-        $warnhtml = html_writer::div(
-            get_string('settings:noprofilefield', 'tool_inactiveusersgc', (object)[
-                'url' => $manageurl->out(false),
-            ]),
-            'alert alert-warning'
-        );
-
-        $settings->add(new admin_setting_heading(
-            'tool_inactiveusersgc_missingfield',
-            get_string('settings:tenantfilterheading', 'tool_inactiveusersgc'),
-            $warnhtml
-        ));
-    }
 
     // Method (suspend/delete).
     $settings->add(new admin_setting_configselect(

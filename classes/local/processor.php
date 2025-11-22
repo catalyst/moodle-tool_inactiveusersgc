@@ -87,28 +87,56 @@ class processor {
      */
     protected function find_candidates(): array {
         $params = [];
-        $tenantfilter = '';
-        $tenantfilterwhere = '';
+        $tenantjoins = '';
+        $tenantwhere = '';
+
+        // Read configured membership codes from plugin settings.
         $codescsv = trim((string)($this->cfg->tenantcodes ?? ''));
+
         if ($codescsv !== '') {
-            // Filter by profile field 'primary_membership_code' in a list of values.
-            $codes = array_map('trim', explode(',', $codescsv));
-            list($insql, $inparams) = $this->db->get_in_or_equal($codes, SQL_PARAMS_NAMED);
-            $params += $inparams;
-            $tenantfilter = "
-                JOIN {user_info_data} uid ON uid.userid = u.id
-                JOIN {user_info_field} uif ON uif.id = uid.fieldid AND uif.shortname = :pfshort
-            ";
-            $params['pfshort'] = 'primary_membership_code';
-            $tenantfilterwhere = " AND uid.data $insql ";
+            // Allow commas and newlines in the setting.
+            $codes = preg_split('/[,\n]+/', $codescsv, -1, PREG_SPLIT_NO_EMPTY);
+            $codes = array_map('trim', $codes);
+
+            if (!empty($codes)) {
+                list($insql, $inparams) = $this->db->get_in_or_equal($codes, SQL_PARAMS_NAMED);
+                $params += $inparams;
+
+                // Join the CPD tenant structures.
+                $tenantjoins = "
+                JOIN {tenant} t
+                    ON t.id = u.tenantid
+                JOIN {local_cpd_tenant_settings} lcts
+                    ON lcts.tenantid = t.id
+                JOIN {local_cpd_tenant_membership} lctm
+                    ON lctm.tenantsettingsid = lcts.id
+                JOIN {local_cpd_membership_code} lcmc
+                    ON lcmc.id = lctm.membershipcodeid
+                ";
+
+
+                // Filter by CPD membership code.
+                $tenantwhere = " AND lcmc.code $insql ";
+            }
         }
 
         $sql = "
-            SELECT u.id, u.firstname, u.lastname, u.email, u.lastaccess,
-                   u.timecreated, u.suspended, u.deleted
-            FROM {user} u $tenantfilter
-            WHERE u.deleted = 0 AND u.suspended = 0 $tenantfilterwhere
-        ";
+        SELECT
+            u.id,
+            u.firstname,
+            u.lastname,
+            u.email,
+            u.lastaccess,
+            u.timecreated,
+            u.suspended,
+            u.deleted
+        FROM {user} u
+        $tenantjoins
+        WHERE u.deleted = 0
+          AND u.suspended = 0
+          $tenantwhere
+    ";
+
         return $this->db->get_records_sql($sql, $params);
     }
 

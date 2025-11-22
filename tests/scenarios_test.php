@@ -33,8 +33,6 @@ use tool_inactiveusersgc\task\process_users;
  * @covers \tool_inactiveusersgc\observer
  */
 final class scenarios_test extends advanced_testcase {
-    /** @var stdClass profile field record for primary_membership_code */
-    protected $profilefield;
 
     /**
      * PHPUnit setUp.
@@ -63,28 +61,6 @@ final class scenarios_test extends advanced_testcase {
         set_config('supportemail', '', 'tool_inactiveusersgc');
         set_config('tenantcodes', '', 'tool_inactiveusersgc');
 
-        // Create the custom profile field 'primary_membership_code' used for tenant filtering.
-        global $DB;
-        $this->profilefield = (object)[
-            'shortname' => 'primary_membership_code',
-            'name' => 'Primary Membership Code',
-            'datatype' => 'text',
-            'description' => 'Membership code for tenant filtering',
-            'descriptionformat' => FORMAT_PLAIN,
-            'required' => 0,
-            'locked' => 0,
-            'visible' => 2,
-            'forceunique' => 0,
-            'signup' => 0,
-            'defaultdata' => '',
-            'defaultdataformat' => 0,
-            'param1' => '30',
-            'param2' => '2048',
-            'param3' => null,
-            'param4' => null,
-            'param5' => null,
-        ];
-        $this->profilefield->id = $DB->insert_record('user_info_field', $this->profilefield);
     }
 
     /**
@@ -149,25 +125,99 @@ final class scenarios_test extends advanced_testcase {
     }
 
     /**
-     * Helper: assign primary_membership_code to user.
+     * Helper: assign a CPD membership "code" to a user via tenant + CPD tables.
+     *
+     * This creates (once per code):
+     *   - a tenant with idnumber = $code
+     *   - a CPD organisation (first use only)
+     *   - a CPD membership code (local_cpd_membership_code.code = $code)
+     *   - tenant settings + tenant membership mapping
+     * Then assigns the user to that tenant (user.tenantid).
+     *
      * @throws dml_exception
      */
     protected function set_tenant_code(stdClass $user, string $code): void {
         global $DB;
-        $data = (object)[
-            'userid' => $user->id,
-            'fieldid' => $this->profilefield->id,
-            'data' => $code,
-            'dataformat' => 0,
-        ];
-        // Upsert to user_info_data.
-        $existing = $DB->get_record('user_info_data', ['userid' => $user->id, 'fieldid' => $this->profilefield->id]);
-        if ($existing) {
-            $data->id = $existing->id;
-            $DB->update_record('user_info_data', $data);
-        } else {
-            $DB->insert_record('user_info_data', $data);
+
+        // If we've already created a tenant for this code, just re-use it.
+        if (!isset($this->tenantbycode[$code])) {
+            // Ensure we have a category & cohort to satisfy tenant FKs.
+            if ($this->tenantcategoryid === null) {
+                $category = $this->getDataGenerator()->create_category();
+                $this->tenantcategoryid = $category->id;
+            }
+            if ($this->tenantcohortid === null) {
+                $syscontext = \context_system::instance();
+                $cohort = $this->getDataGenerator()->create_cohort(['contextid' => $syscontext->id]);
+                $this->tenantcohortid = $cohort->id;
+            }
+
+            // Ensure we have a CPD organisation.
+            if ($this->cpdorgid === null) {
+                $org = (object)[
+                    'name'    => 'Test Organisation',
+                    'visible' => 1,
+                ];
+                $org->id = $DB->insert_record('local_cpd_organisation', $org);
+                $this->cpdorgid = $org->id;
+            }
+
+            // Create a tenant for this code.
+            $admin = get_admin();
+            $tenant = (object)[
+                'name'              => 'Tenant ' . $code,
+                'idnumber'          => $code,
+                'description'       => 'Test tenant for code ' . $code,
+                'descriptionformat' => FORMAT_PLAIN,
+                'suspended'         => 0,
+                'categoryid'        => $this->tenantcategoryid,
+                'cohortid'          => $this->tenantcohortid,
+                'timecreated'       => time(),
+                'usercreated'       => $admin->id,
+            ];
+            $tenant->id = $DB->insert_record('tenant', $tenant);
+
+            // CPD membership code for this tenant.
+            $mcode = (object)[
+                'organisationid' => $this->cpdorgid,
+                'code'           => $code,
+                'description'    => 'Test membership code ' . $code,
+            ];
+            $mcode->id = $DB->insert_record('local_cpd_membership_code', $mcode);
+
+            // CPD tenant settings.
+            $settings = (object)[
+                'tenantid'             => $tenant->id,
+                'cyclestart'           => null,
+                'iddhours'             => null,
+                'ciihours'             => null,
+                'ciistructuredhours'   => null,
+                'nonreghours'          => null,
+                'nonregstructuredhours'=> null,
+                'completerecord'       => 0,
+                'trialaccount'         => 0,
+                'trialenddate'         => null,
+                'usermodified'         => $admin->id,
+                'timecreated'          => time(),
+                'timemodified'         => time(),
+            ];
+            $settings->id = $DB->insert_record('local_cpd_tenant_settings', $settings);
+
+            // Link tenant settings to membership code.
+            $tm = (object)[
+                'tenantsettingsid' => $settings->id,
+                'membershipcodeid' => $mcode->id,
+            ];
+            $DB->insert_record('local_cpd_tenant_membership', $tm);
+
+            // Cache tenant id by code for reuse.
+            $this->tenantbycode[$code] = $tenant->id;
         }
+
+        $tenantid = $this->tenantbycode[$code];
+
+        // Finally, assign the user to this tenant.
+        $DB->set_field('user', 'tenantid', $tenantid, ['id' => $user->id]);
     }
 
     /**
