@@ -11,10 +11,10 @@ Go to *Site administration → Server → Inactive users manager (GC)* and set:
 - Repeat intervals for first/second warnings
 - Action days and method (suspend/delete)
 - Optional support email for run summaries
-- Optional list of allowed Primary Membership Codes (comma-separated) via user profile field `primary_membership_code`.
+- Optional list of allowed Primary Membership Codes (comma-separated), matched against the codes configured on each user's Totara tenant's CPD settings (`local_cpd_tenant_settings` / `local_cpd_membership_code`, see *Site administration → CPD → Tenant settings*).
 
 ## How it works
-- A daily scheduled task scans users who are not deleted/suspended and (optionally) match the tenant codes.
+- A daily scheduled task scans users who are not deleted/suspended and (optionally) whose tenant has one of the configured Primary Membership Codes.
 - For each user, inactivity is calculated from `lastaccess` or `timecreated` if never logged in.
 - It sends first/second/final emails according to thresholds and repeats, and actions accounts past `actiondays`.
 - On user login, any notification records are cleared so future inactivity starts from stage 1.

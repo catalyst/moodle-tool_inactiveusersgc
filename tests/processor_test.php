@@ -22,6 +22,7 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
  */
+use core_phpunit\testcase;
 use tool_inactiveusersgc\local\processor;
 
 /**
@@ -35,7 +36,7 @@ use tool_inactiveusersgc\local\processor;
  * @package           tool_inactiveusersgc
  * @group             tool_inactiveusersgc
  */
-final class processor_test extends advanced_testcase {
+final class processor_test extends testcase {
     public function setUp(): void {
         parent::setUp();
         $this->resetAfterTest();

@@ -81,7 +81,7 @@ class processor {
 
     /**
      * Find users matching filters and inactive thresholds (we evaluate per-user in process_user).
-     * Filters: deleted=0, suspended=0, optional tenant codes.
+     * Filters: deleted=0, suspended=0, optional tenant membership codes.
      * @return array of user records (id, firstname, lastname, email, lastaccess, timecreated)
      * @throws dml_exception
      */
@@ -91,16 +91,17 @@ class processor {
         $tenantfilterwhere = '';
         $codescsv = trim((string)($this->cfg->tenantcodes ?? ''));
         if ($codescsv !== '') {
-            // Filter by profile field 'primary_membership_code' in a list of values.
+            // Filter to users whose Totara tenant has one of these Primary Membership Codes
+            // configured on the tenant's CPD settings (local_cpd_tenant_settings).
             $codes = array_map('trim', explode(',', $codescsv));
             list($insql, $inparams) = $this->db->get_in_or_equal($codes, SQL_PARAMS_NAMED);
             $params += $inparams;
             $tenantfilter = "
-                JOIN {user_info_data} uid ON uid.userid = u.id
-                JOIN {user_info_field} uif ON uif.id = uid.fieldid AND uif.shortname = :pfshort
+                JOIN {local_cpd_tenant_settings} lcts ON lcts.tenantid = u.tenantid
+                JOIN {local_cpd_tenant_membership} lctm ON lctm.tenantsettingsid = lcts.id
+                JOIN {local_cpd_membership_code} lcmc ON lcmc.id = lctm.membershipcodeid
             ";
-            $params['pfshort'] = 'primary_membership_code';
-            $tenantfilterwhere = " AND uid.data $insql ";
+            $tenantfilterwhere = " AND lcmc.code $insql ";
         }
 
         $sql = "

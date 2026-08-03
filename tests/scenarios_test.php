@@ -23,6 +23,7 @@
  * @author     Waleed ul hassan <waleed.hassan@catalyst-eu.net>
  */
 use core\event\user_loggedin;
+use core_phpunit\testcase;
 use tool_inactiveusersgc\observer;
 use tool_inactiveusersgc\task\process_users;
 
@@ -32,16 +33,12 @@ use tool_inactiveusersgc\task\process_users;
  * @covers \tool_inactiveusersgc\task\process_users
  * @covers \tool_inactiveusersgc\observer
  */
-final class scenarios_test extends advanced_testcase {
-    /** @var stdClass profile field record for primary_membership_code */
-    protected $profilefield;
-
+final class scenarios_test extends testcase {
     /**
      * PHPUnit setUp.
      *
-     * Resets state, sets default plugin config, and creates
-     * the custom profile field `primary_membership_code`
-     * used for tenant filtering tests.
+     * Resets state, sets default plugin config, and enables Totara
+     * tenants so tests can build tenant-based filtering fixtures.
      *
      * @return void
      * @throws dml_exception
@@ -63,28 +60,7 @@ final class scenarios_test extends advanced_testcase {
         set_config('supportemail', '', 'tool_inactiveusersgc');
         set_config('tenantcodes', '', 'tool_inactiveusersgc');
 
-        // Create the custom profile field 'primary_membership_code' used for tenant filtering.
-        global $DB;
-        $this->profilefield = (object)[
-            'shortname' => 'primary_membership_code',
-            'name' => 'Primary Membership Code',
-            'datatype' => 'text',
-            'description' => 'Membership code for tenant filtering',
-            'descriptionformat' => FORMAT_PLAIN,
-            'required' => 0,
-            'locked' => 0,
-            'visible' => 2,
-            'forceunique' => 0,
-            'signup' => 0,
-            'defaultdata' => '',
-            'defaultdataformat' => 0,
-            'param1' => '30',
-            'param2' => '2048',
-            'param3' => null,
-            'param4' => null,
-            'param5' => null,
-        ];
-        $this->profilefield->id = $DB->insert_record('user_info_field', $this->profilefield);
+        \totara_tenant\testing\generator::instance()->enable_tenants();
     }
 
     /**
@@ -149,25 +125,26 @@ final class scenarios_test extends advanced_testcase {
     }
 
     /**
-     * Helper: assign primary_membership_code to user.
+     * Helper: put a user into a fresh Totara tenant whose CPD settings have
+     * the given Primary Membership Code, so tenant-based filtering picks them up.
      * @throws dml_exception
      */
     protected function set_tenant_code(stdClass $user, string $code): void {
-        global $DB;
-        $data = (object)[
-            'userid' => $user->id,
-            'fieldid' => $this->profilefield->id,
-            'data' => $code,
-            'dataformat' => 0,
-        ];
-        // Upsert to user_info_data.
-        $existing = $DB->get_record('user_info_data', ['userid' => $user->id, 'fieldid' => $this->profilefield->id]);
-        if ($existing) {
-            $data->id = $existing->id;
-            $DB->update_record('user_info_data', $data);
-        } else {
-            $DB->insert_record('user_info_data', $data);
-        }
+        $tenantgenerator = \totara_tenant\testing\generator::instance();
+        $tenant = $tenantgenerator->create_tenant(null);
+        $tenantgenerator->migrate_user_to_tenant($user->id, $tenant->id);
+
+        $cpdgenerator = $this->getDataGenerator()->get_plugin_generator('local_cpd');
+        $tenantsettings = $cpdgenerator->create_tenant_settings((object)['tenantid' => $tenant->id]);
+        $organisation = $cpdgenerator->create_organisation();
+        $membershipcode = $cpdgenerator->create_membership_code((object)[
+            'organisationid' => $organisation->id,
+            'code' => $code,
+        ]);
+        $cpdgenerator->create_tenant_membership((object)[
+            'tenantsettingsid' => $tenantsettings->id,
+            'membershipcodeid' => $membershipcode->id,
+        ]);
     }
 
     /**
