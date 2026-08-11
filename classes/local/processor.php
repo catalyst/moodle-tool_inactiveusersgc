@@ -359,9 +359,8 @@ class processor {
         ];
         $subject = strtr($subjecttpl, $replacements);
 
-        // Start from plain text body (don’t run filters here — keep deterministic).
-        $bodytext = strtr($bodytpl, $replacements);
-        $bodytext = trim(format_text($bodytext, FORMAT_PLAIN, ['filter' => false, 'noclean' => true]));
+        // Plain text body: just substitute placeholders, no HTML conversion.
+        $bodytext = trim(strtr($bodytpl, $replacements));
 
         // Build HTML counterpart so $msg->body is populated in tests/clients.
         // text_to_html() converts newlines to <br> and escapes safely.

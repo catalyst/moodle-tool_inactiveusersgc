@@ -27,11 +27,28 @@
  */
 
 $string['inactiveusersgc:manage'] = 'Manage inactive users tool settings';
-$string['email:final:body:default'] = 'Hi {$a->firstname},\n\nThis is your final notice. If you don’t sign in by {$a->actiondate}, your account will be {$a->method}.\n\nThanks,\n{$a->supportname}';
+$string['email:final:body:default'] = 'Hi {$a->firstname},
+
+This is your final notice. If you don’t sign in by {$a->actiondate}, your account will be {$a->method}.
+
+Thanks,
+{$a->supportname}';
 $string['email:final:subject:default'] = 'Final notice: Account action on {$a->actiondate}';
-$string['email:first:body:default'] = 'Hi {$a->firstname},\n\nIt looks like you haven’t signed in to {$a->sitename} for a while.\nIf you still need your account, please sign in within the next few weeks.\n\nThanks,\n{$a->supportname}';
+$string['email:first:body:default'] = 'Hi {$a->firstname},
+
+It looks like you haven’t signed in to {$a->sitename} for a while.
+If you still need your account, please sign in within the next few weeks.
+
+Thanks,
+{$a->supportname}';
 $string['email:first:subject:default'] = 'We miss you at {$a->sitename} – quick reminder';
-$string['email:second:body:default'] = 'Hi {$a->firstname},\n\nThis is a reminder that your {$a->sitename} account has been inactive.\nPlease sign in to keep it active.\n\nThanks,\n{$a->supportname}';
+$string['email:second:body:default'] = 'Hi {$a->firstname},
+
+This is a reminder that your {$a->sitename} account has been inactive.
+Please sign in to keep it active.
+
+Thanks,
+{$a->supportname}';
 $string['email:second:subject:default'] = 'Important: Your {$a->sitename} account is becoming inactive';
 $string['pluginname'] = 'Inactive users manager';
 $string['privacy:metadata'] = 'This tool stores per-user notification stage and timestamps to manage inactivity warnings and actions.';
@@ -57,6 +74,10 @@ $string['settings:supportemail'] = 'Support email address';
 $string['settings:supportemail_desc'] = 'Address to receive a summary after each task run. Defaults to the site support email if left empty.';
 $string['settings:tenantcodes'] = 'Allowed primary membership codes (comma-separated)';
 $string['settings:tenantcodes_desc'] = 'Filter to users whose Totara tenant has one of these Primary Membership Codes configured on the tenant\'s CPD settings (local_cpd). Leave blank to include all.';
-$string['summary:body'] = 'Execution time: {$a->when}\nFound: {$a->countfound}\nNotified: {$a->countnotified}\nActioned: {$a->countactioned}\nErrors: {$a->counterrors}';
+$string['summary:body'] = 'Execution time: {$a->when}
+Found: {$a->countfound}
+Notified: {$a->countnotified}
+Actioned: {$a->countactioned}
+Errors: {$a->counterrors}';
 $string['summary:subject'] = 'Inactive users manager – task summary';
 $string['task:process'] = 'Process inactive users (notify and action)';
